@@ -1,187 +1,116 @@
 <!DOCTYPE html>
 <html lang="sl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cezarjeva šifra - Igra</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cezarjeva koda</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f0f8ff;
+      font-family: monospace;
+      background-color: #e0f7ff; /* svetlo modro ozadje */
       padding: 2em;
       text-align: center;
     }
-    h1 {
-      color: #333;
-    }
     textarea {
-      width: 80%;
+      width: 90%;
       height: 100px;
       font-size: 1.2em;
       text-transform: uppercase;
     }
-    input[type=number], input[type=checkbox] {
+    input[type="number"] {
+      width: 50px;
       font-size: 1em;
-      margin-left: 0.5em;
+      text-align: center;
     }
-    button {
-      margin: 0.5em;
-      padding: 0.7em 1.5em;
+    label {
       font-size: 1em;
-      cursor: pointer;
-      border: none;
-      border-radius: 10px;
-      background-color: #4CAF50;
-      color: white;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    #output {
-      margin-top: 1em;
-      font-size: 1.5em;
-      font-weight: bold;
-      color: #003366;
-      min-height: 2em;
     }
     #alphabetDisplay {
+      white-space: pre;
       font-size: 1.2em;
       margin: 1em auto;
-      white-space: pre;
-      font-family: monospace;
-      text-align: left;
-      display: inline-block;
     }
-    #visualOutput {
-      font-family: monospace;
-      white-space: pre;
-      margin-top: 1em;
-      font-size: 1.2em;
-      display: inline-block;
-      text-align: left;
-    }
-    .highlight {
-      background-color: yellow;
-      font-weight: bold;
+    #outputArea {
       font-size: 1.5em;
-      transition: background-color 0.4s ease-in-out;
-      animation: flash 0.8s ease-in-out;
+      margin-top: 2em;
+      white-space: pre;
+      font-family: monospace;
     }
-  </style>
-
-  <style>
-  @keyframes flash {
-    0% { background-color: yellow; }
-    50% { background-color: transparent; }
-    100% { background-color: transparent; }
-  }
   </style>
 </head>
 <body>
-  <h1>Cezarjeva koda - Igra s šifriranjem</h1>
+  <h1>Cezarjeva šifra</h1>
 
-  <p>Vnesi BESEDILO (samo VELIKE črke, tudi Š, Č, Ž):</p>
-  <textarea id="inputText"></textarea>
-
+  <textarea id="inputText" placeholder="Vnesi besedilo (samo VELIKE ČRKE)"></textarea>
   <p>
-    Premik črk (lahko negativen): 
-    <input type="number" id="shift" value="3" oninput="updateShiftedAlphabet()" />
-    <label><input type="checkbox" id="toggleAlphabet" checked onchange="toggleAlphabetDisplay()" /> Prikaži zamik abecede</label>
+    Zamikanje za: <input type="number" id="shift" value="3">
+    <label><input type="checkbox" id="toggleAbeceda" checked> Prikaži abecedo</label>
   </p>
 
   <div id="alphabetDisplay"></div>
+  <button onclick="encrypt()">Šifriraj</button>
+  <button onclick="decrypt()">Dešifriraj</button>
 
-  <div>
-    <button onclick="encryptAnimated()">Šifriraj (animirano)</button>
-    <button onclick="decryptAnimated()">Dešifriraj (animirano)</button>
-  </div>
-
-  <div id="output"></div>
-  <div id="visualOutput"></div>
+  <div id="outputArea"></div>
 
   <script>
-    const alphabet = 'ABCČDEFGHIJKLMNOPRSŠTUVZŽ';
+    const abeceda = 'ABCČDEFGHIJKLMNOPRSŠTUVZŽ';
 
-    function normalize(char) {
-      return char.toUpperCase();
-    }
-
-    function updateShiftedAlphabet() {
-      const shift = parseInt(document.getElementById('shift').value);
-      let normal = '';
-      let shifted = '';
-      for (let i = 0; i < alphabet.length; i++) {
-        normal += alphabet[i] + ' ';
-        shifted += alphabet[(i + shift + alphabet.length) % alphabet.length] + ' ';
+    function prikaziAbecedo(zamik) {
+      let osnovna = '';
+      let zamaknjena = '';
+      for (let i = 0; i < abeceda.length; i++) {
+        osnovna += abeceda[i] + ' ';
+        zamaknjena += abeceda[(i + zamik + abeceda.length) % abeceda.length] + ' ';
       }
-      const display = `ABECEDA:   ${normal}
-ZAMIK:     ${shifted}`;
-      document.getElementById('alphabetDisplay').innerText = display;
+      document.getElementById("alphabetDisplay").innerText = osnovna + '\n' + zamaknjena;
     }
 
-    function toggleAlphabetDisplay() {
-      const display = document.getElementById('alphabetDisplay');
-      const checkbox = document.getElementById('toggleAlphabet');
-      display.style.display = checkbox.checked ? 'inline-block' : 'none';
+    function encrypt() {
+      zaženiAnimacijo(true);
     }
 
-    function encryptAnimated() {
-      animateTransform(true);
+    function decrypt() {
+      zaženiAnimacijo(false);
     }
 
-    function decryptAnimated() {
-      animateTransform(false);
-    }
+    function zaženiAnimacijo(sifriraj) {
+      const text = document.getElementById("inputText").value.toUpperCase();
+      const zamik = parseInt(document.getElementById("shift").value);
+      const prikazi = document.getElementById("toggleAbeceda").checked;
 
-    function animateTransform(isEncryption) {
-      const input = normalize(document.getElementById('inputText').value);
-      const shift = parseInt(document.getElementById('shift').value);
-      let output = '';
-      let visualTop = [];
-      let visualBottom = [];
-      let index = 0;
+      const končniZamik = sifriraj ? zamik : -zamik;
 
-      const outputDiv = document.getElementById('output');
-      const visualDiv = document.getElementById('visualOutput');
+      if (prikazi) prikaziAbecedo(končniZamik);
+      else document.getElementById("alphabetDisplay").innerText = '';
 
-      outputDiv.innerText = '';
-      visualDiv.innerText = '';
+      const display = document.getElementById("outputArea");
+      display.innerHTML = '';
 
-      function animate() {
-        if (index >= input.length) return;
+      let i = 0;
+      let izvorno = '';
+      let kriptirano = '';
+      let stolpci = '';
 
-        const char = input[index];
-        const charIndex = alphabet.indexOf(char);
-        let newChar = char;
+      function animiraj() {
+        if (i >= text.length) return;
 
-        if (charIndex !== -1) {
-          const shiftDirection = isEncryption ? 1 : -1;
-          const newIndex = (charIndex + shiftDirection * shift + alphabet.length) % alphabet.length;
-          newChar = alphabet[newIndex];
-        }
+        const znak = text[i];
+        const index = abeceda.indexOf(znak);
+        const rezultat = index !== -1 ? abeceda[(index + končniZamik + abeceda.length) % abeceda.length] : znak;
 
-        output += newChar;
-        visualTop.push(`<span class='highlight'>${char}</span>`);
-        visualBottom.push(`<span class='highlight'>${newChar}</span>`);
+        izvorno += `${znak} `;
+        kriptirano += `${rezultat} `;
+        stolpci += `${znak} → ${rezultat}<br>`;
 
-        let visual = '';
-        for (let i = 0; i < visualTop.length; i++) {
-          visual += visualTop[i] + ' → ' + visualBottom[i] + '
-';
-        }
+        display.innerHTML = `${izvorno}<br>${kriptirano}<br><br>${stolpci}`;
 
-        outputDiv.innerHTML = output;
-        visualDiv.innerHTML = visual.replace(/
-/g, '<br>');
-
-        index++;
-        setTimeout(animate, 400);
+        i++;
+        setTimeout(animiraj, 400);
       }
 
-      animate();
+      animiraj();
     }
-
-    updateShiftedAlphabet();
   </script>
 </body>
 </html>
