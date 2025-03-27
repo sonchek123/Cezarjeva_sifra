@@ -1,6 +1,6 @@
 # 🕵️‍♂️ Cezarjeva šifra - Igra
 Preizkušanje pisanje kode s pomočjo ChatGPT 
-## učim se 
+učim se 
 
 Ta interaktivna spletna aplikacija omogoča šifriranje in dešifriranje besedila s pomočjo Cezarjeve šifre v slovenskem jeziku. Učenci lahko spremljajo animacijo vsake črke in vizualno opazujejo, kako se posamezne črke pretvorijo glede na izbrani premik.
 
